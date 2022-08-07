@@ -31,22 +31,46 @@
         </li>
       </ul>
       <small>* requires Desktop Version to connect to MQTT </small>
+      <p>
+        <a
+          href="https://github.com/bfritscher/homeassistant-mqtt-ui/releases"
+          target="_blank"
+          >Latest version available on GitHub</a
+        >
+      </p>
     </div>
     <div class="text-h5 q-mt-md">Other resources</div>
     <ul>
       <li>
-        <a href="https://www.home-assistant.io/docs/mqtt/discovery/"
+        <a
+          href="https://github.com/bfritscher/homeassistant-mqtt-ui/"
+          target="_blank"
+          >Source Code on GitHub</a
+        >
+      </li>
+      <li>
+        <a
+          href="https://www.home-assistant.io/docs/mqtt/discovery/"
+          target="_blank"
           >Home Assistant - MQTT Discovery</a
         >
       </li>
-      <li><a href="https://test.mosquitto.org/">MQTT Test server</a></li>
       <li>
-        <a href="https://zigbee.blakadder.com/Sonoff_ZBBridge.html"
+        <a href="https://test.mosquitto.org/" target="_blank"
+          >MQTT Test server</a
+        >
+      </li>
+      <li>
+        <a
+          href="https://zigbee.blakadder.com/Sonoff_ZBBridge.html"
+          target="_blank"
           >Sonoff Zigbee Bridge (ZB Bridge) flash instructions</a
         >
       </li>
       <li>
-        <a href="https://tasmota.github.io/docs/Commands/#zigbee"
+        <a
+          href="https://tasmota.github.io/docs/Commands/#zigbee"
+          target="_blank"
           >Tasmota ZigBee Commands</a
         >
       </li>
