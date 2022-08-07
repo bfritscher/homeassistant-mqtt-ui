@@ -15,6 +15,7 @@
       <div class="col-12 col-md-6">
         <q-input
           v-model="mqttStore.config.password"
+          label="Password"
           :type="isPwd ? 'password' : 'text'"
         >
           <template v-slot:append>
