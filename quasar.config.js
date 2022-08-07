@@ -67,6 +67,7 @@ module.exports = configure(function (/* ctx */) {
       */
 
       vueRouterMode: "hash", // available values: 'hash', 'history'
+      publicPath: process.env.PUBLIC_PATH ?? process.env.NODE_ENV === 'development' ? '/' : '/homeassistant-mqtt-ui',
       // vueRouterBase,
       vueDevtools: true,
       // vueOptionsAPI: false,
