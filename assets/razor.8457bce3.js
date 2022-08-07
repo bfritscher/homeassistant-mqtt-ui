@@ -1,4 +1,4 @@
-import{m}from"./MonacoEditor.d71c3ba6.js";import"./index.d22ee9a3.js";import"./QResizeObserver.cac14f77.js";/*!-----------------------------------------------------------------------------
+import{m}from"./MonacoEditor.4934d1ff.js";import"./index.d0b68c68.js";import"./QResizeObserver.db798392.js";/*!-----------------------------------------------------------------------------
  * Copyright (c) Microsoft Corporation. All rights reserved.
  * Version: 0.33.0(4b1abad427e58dbedc1215d99a0902ffc885fcd4)
  * Released under the MIT license
