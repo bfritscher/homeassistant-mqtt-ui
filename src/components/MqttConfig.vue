@@ -28,6 +28,9 @@
         </q-input>
       </div>
     </q-card-section>
+    <q-banner v-if="mqttStore.error" inline-actions class="text-white bg-red">
+      {{ mqttStore.error }}
+    </q-banner>
     <q-card-actions align="right">
       <q-btn
         label="connect"

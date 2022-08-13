@@ -1,6 +1,6 @@
 {
   "name": "homeassistant-mqtt-ui",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "UI to administer MQTT device discovery for Home Assistant",
   "productName": "HomeAssistantMQTT-UI",
   "author": "Boris Fritscher <boris@fritscher.ch>",

@@ -9,7 +9,8 @@ UI to administer MQTT device discovery for Home Assistant
   topic. This allows to define sensors and other entities to a device, which
   is not supported via template.
 
-  The app has three main features:
+The app has three main features:
+
   <ul>
     <li class="q-my-md">
       <b>MQTT Explorer*</b> - allows to explore MQTT topics specific to home
@@ -36,15 +37,16 @@ UI to administer MQTT device discovery for Home Assistant
   <small>* requires Desktop Version to connect to MQTT </small>
 </div>
 
-
 ### Desktop
 
 Download from the [release page](https://github.com/bfritscher/homeassistant-mqtt-ui/releases) or build your own.
 
-#### *Linux*
-App cannot be started by clicking on it, on Nautilus[*](https://stackoverflow.com/questions/55060402/electron-executable-not-recognized-by-nautilus)
+#### _Linux_
+
+App cannot be started by clicking on it, on Nautilus[\*](https://stackoverflow.com/questions/55060402/electron-executable-not-recognized-by-nautilus)
 
 Make it executable and then you can run it from command line.
+
 ```
 ./'HomeAssistantMQTT-UI'
 ```
@@ -58,7 +60,6 @@ Make it executable and then you can run it from command line.
 ![Tasmota ZB Bridge](docs/images/tasmota_zb_bridge.png)
 
 ![Discovery Generator](docs/images/discovery_generator.png)
-
 
 # Development
 

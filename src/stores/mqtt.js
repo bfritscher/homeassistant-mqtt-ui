@@ -2,13 +2,21 @@ import { defineStore } from "pinia";
 import { ref, watchEffect, computed } from "vue";
 
 const subscribers = [];
+const KEY_MQTT_CONFIG = "KEY_MQTT_CONFIG";
 
 export const useMQTTStore = defineStore("mqtt", () => {
-  const config = ref({
+  const saved = localStorage.getItem(KEY_MQTT_CONFIG);
+  let savedConfig = {
     url: "", // protocol://host:port
     username: "",
     password: "",
-  });
+  };
+  if (saved) {
+    try {
+      savedConfig = JSON.parse(saved);
+    } catch (e) {}
+  }
+  const config = ref(savedConfig);
 
   const topics = ref({});
   const topicsTree = ref([
@@ -114,6 +122,7 @@ export const useMQTTStore = defineStore("mqtt", () => {
   const error = ref(null);
 
   function connect() {
+    localStorage.setItem(KEY_MQTT_CONFIG, JSON.stringify(config.value));
     window.mqtt.connect(
       {
         url: config.value.url,
@@ -124,9 +133,13 @@ export const useMQTTStore = defineStore("mqtt", () => {
         if (topic === null) {
           if (Object.prototype.hasOwnProperty.call(message, "connected")) {
             isConnected.value = message.connected;
+            if (isConnected.value) {
+              error.value = null;
+            }
           }
           if (Object.prototype.hasOwnProperty.call(message, "error")) {
             error.value = message.error;
+            disconnect();
           }
           return;
         }
@@ -198,6 +211,7 @@ export const useMQTTStore = defineStore("mqtt", () => {
     topicsTree,
     zigbee2mqttCount,
     homeassistantCount,
+    error,
     connect,
     disconnect,
     publish,

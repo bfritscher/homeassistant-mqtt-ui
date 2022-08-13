@@ -26,7 +26,9 @@
         >
           <q-badge
             :color="
-              tasmotaStore.zbBridges.length === 0 ? 'negative' : 'positive'
+              mqttStore.isConnected && tasmotaStore.zbBridges.length > 0
+                ? 'positive'
+                : 'negative'
             "
             floating
             rounded
@@ -42,6 +44,8 @@
 
 <script setup>
 import { useTasmotaStore } from "src/stores/tasmota";
+import { useMQTTStore } from "src/stores/mqtt";
 import HeaderStatus from "src/components/HeaderStatus.vue";
 const tasmotaStore = useTasmotaStore();
+const mqttStore = useMQTTStore();
 </script>
