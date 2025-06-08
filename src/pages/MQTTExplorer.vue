@@ -1,21 +1,17 @@
 <template>
   <q-page>
     <mqtt-config v-if="!mqttStore.isConnected" class="q-ma-md" />
-    <q-splitter
-      v-else
-      v-model="ui.mqttExplorer.splitterModel"
-      style="height: calc(100vh - 106px)"
-    >
-      <template v-slot:before>
+    <q-splitter v-else v-model="ui.mqttExplorer.splitterModel" style="height: calc(100vh - 106px)">
+      <template #before>
         <q-input
           ref="filterRef"
-          filled
           v-model="ui.mqttExplorer.filter.query"
+          filled
           :debounce="300"
           label="Filter"
           dense
         >
-          <template v-slot:append>
+          <template #append>
             <q-icon
               v-if="ui.mqttExplorer.filter.query !== ''"
               name="clear"
@@ -35,28 +31,28 @@
         <q-separator />
         <q-tree
           ref="treeRef"
+          v-model:selected="ui.mqttExplorer.selected"
+          v-model:expanded="ui.mqttExplorer.expanded"
           :nodes="mqttStore.topicsTree"
           node-key="id"
           :filter="ui.mqttExplorer.filter"
           :filter-method="filterMethod"
-          v-model:selected="ui.mqttExplorer.selected"
-          v-model:expanded="ui.mqttExplorer.expanded"
         >
-          <template v-slot:default-header="prop">
+          <template #default-header="prop">
             <div class="row full-width items-center">
               <div class="col-grow">{{ prop.node.label }}</div>
               <q-btn
                 v-if="prop.node.selectable"
-                @click.stop="removeTopic(prop.node.id)"
                 size="sm"
                 label="X"
                 color="negative"
                 flat
                 round
+                @click.stop="removeTopic(prop.node.id)"
               />
             </div>
           </template>
-          <template v-slot:header-tasmota-discovery="prop">
+          <template #header-tasmota-discovery="prop">
             <div
               :class="
                 mqttStore.topics[
@@ -64,57 +60,47 @@
                 ].toLowerCase()
               "
             >
-              {{ prop.node.device.dn }} - {{ prop.node.device.md }} [{{
-                prop.node.labelPart
-              }}]
+              {{ prop.node.device.dn }} - {{ prop.node.device.md }} [{{ prop.node.labelPart }}]
               <q-btn
                 :href="`http://${prop.node.device.ip}`"
                 target="_blank"
-                @click.stop
                 flat
                 round
                 size="sm"
                 icon="launch"
+                @click.stop
               />
               <q-btn
                 v-if="tasmotaStore.isZBBridge(prop.node.device)"
-                @click.stop="tasmotaStore.getZbInfo(prop.node.device)"
                 label="Get ZbInfo"
                 color="primary"
                 flat
+                @click.stop="tasmotaStore.getZbInfo(prop.node.device)"
               />
             </div>
           </template>
-          <template v-slot:body-tasmota-discovery="prop">
+          <template #body-tasmota-discovery="prop">
             <div
               @click="
-                ui.mqttExplorer.selected = `${tasmotaStore.resolveFullTopic(
-                  prop.node.device
-                )}STATE`
+                ui.mqttExplorer.selected = `${tasmotaStore.resolveFullTopic(prop.node.device)}STATE`
               "
             >
               {{ tasmotaStore.resolveFullTopic(prop.node.device) }}
             </div>
           </template>
-          <template v-slot:header-homeassistant-discovery="prop">
-            <img
-              v-if="prop.node.avatar"
-              class="q-tree__avatar q-mr-sm"
-              :src="prop.node.avatar"
-            />
+          <template #header-homeassistant-discovery="prop">
+            <img v-if="prop.node.avatar" class="q-tree__avatar q-mr-sm" :src="prop.node.avatar" />
             {{ prop.node.label }}
             <q-btn
-              @click.stop="
-                homeAssistantStore.reverseEntity(prop.node.labelPart)
-              "
               label="Edit"
               color="primary"
               flat
+              @click.stop="homeAssistantStore.reverseEntity(prop.node.labelPart)"
             />
           </template>
         </q-tree>
       </template>
-      <template v-slot:after>
+      <template #after>
         <div class="column full-height overflow-hidden">
           <div class="col-shrink">
             <div class="row items-center">
@@ -125,13 +111,7 @@
                 label="Topic"
                 class="col-grow"
               />
-              <q-btn
-                label="publish"
-                unelevated
-                color="primary"
-                class="q-mx-sm"
-                @click="publish"
-              />
+              <q-btn label="publish" unelevated color="primary" class="q-mx-sm" @click="publish" />
             </div>
             <q-toolbar>
               <q-space />
@@ -147,11 +127,7 @@
                 map-options
                 dense
               />
-              <q-checkbox
-                v-model="ui.mqttExplorer.retain"
-                label="retain"
-                dense
-              />
+              <q-checkbox v-model="ui.mqttExplorer.retain" label="retain" dense />
             </q-toolbar>
           </div>
           <q-separator />
@@ -163,13 +139,13 @@
 </template>
 
 <script setup>
-import { ref, watchEffect } from "vue";
-import { useMQTTStore } from "src/stores/mqtt";
-import { useTasmotaStore } from "src/stores/tasmota";
-import { useHomeAssistantStore } from "src/stores/homeassistant";
-import { useUIStore } from "src/stores/ui";
-import MonacoEditor from "src/components/MonacoEditor.vue";
-import MqttConfig from "src/components/MqttConfig.vue";
+import { ref, watchEffect } from 'vue';
+import { useMQTTStore } from 'src/stores/mqtt';
+import { useTasmotaStore } from 'src/stores/tasmota';
+import { useHomeAssistantStore } from 'src/stores/homeassistant';
+import { useUIStore } from 'src/stores/ui';
+import MonacoEditor from 'src/components/MonacoEditor.vue';
+import MqttConfig from 'src/components/MqttConfig.vue';
 
 const mqttStore = useMQTTStore();
 const tasmotaStore = useTasmotaStore();
@@ -180,12 +156,14 @@ const filterRef = ref(null);
 const treeRef = ref(null);
 
 watchEffect(() => {
-  let newContent = "";
+  let newContent = '';
   if (ui.mqttExplorer.selected) {
     newContent = mqttStore.topics[ui.mqttExplorer.selected];
     try {
       newContent = JSON.stringify(JSON.parse(newContent), null, 2);
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Failed to parse JSON for topic:', ui.mqttExplorer.selected, e);
+    }
     ui.mqttExplorer.content = newContent;
   }
   ui.mqttExplorer.topic = ui.mqttExplorer.selected;
@@ -194,18 +172,14 @@ watchEffect(() => {
 function filterMethod(node, filter) {
   const json = filter;
 
-  if (node.type === "zigbee2mqtt" && !json.zigbee2mqtt) {
+  if (node.type === 'zigbee2mqtt' && !json.zigbee2mqtt) {
     return false;
   }
   if (!json.query) {
     return true;
   }
   const search = ui.mqttExplorer.filter.query.toLowerCase();
-  if (
-    node.id === "__ROOT__" ||
-    node.id.includes(search) ||
-    node.label.includes(search)
-  ) {
+  if (node.id === '__ROOT__' || node.id.includes(search) || node.label.includes(search)) {
     treeRef.value.setExpanded(node.id, true);
     return true;
   } else {
@@ -213,7 +187,7 @@ function filterMethod(node, filter) {
   }
 }
 function resetFilter() {
-  ui.mqttExplorer.filter.value.query = "";
+  ui.mqttExplorer.filter.value.query = '';
   filterRef.value.focus();
 }
 
@@ -224,7 +198,7 @@ function publish() {
   });
 }
 function removeTopic(topic) {
-  mqttStore.publish(topic, "", { retain: true });
+  mqttStore.publish(topic, '', { retain: true });
   mqttStore.removeTopic(topic);
 }
 </script>

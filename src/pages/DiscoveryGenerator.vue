@@ -8,33 +8,24 @@
         @click="homeAssistantStore.publishAllDevices()"
       />
       <q-space />
-      <q-btn
-        label="remove all"
-        flat
-        color="negative"
-        @click="homeAssistantStore.removeAll()"
-      />
+      <q-btn label="remove all" flat color="negative" @click="homeAssistantStore.removeAll()" />
     </q-toolbar>
     <home-assistant-mqtt-device
-      :device="device"
       v-for="device in homeAssistantStore.devices"
       :key="device.id"
+      :device="device"
       class="q-ma-md"
     />
     <q-toolbar>
-      <q-btn
-        label="add device"
-        color="primary"
-        @click="homeAssistantStore.addDevice()"
-      />
+      <q-btn label="add device" color="primary" @click="homeAssistantStore.addDevice()" />
     </q-toolbar>
   </q-page>
 </template>
 
 <script setup>
-import { useHomeAssistantStore } from "src/stores/homeassistant";
+import { useHomeAssistantStore } from 'src/stores/homeassistant';
 
-import HomeAssistantMqttDevice from "src/components/HomeAssistantMqttDevice.vue";
+import HomeAssistantMqttDevice from 'src/components/HomeAssistantMqttDevice.vue';
 
 const homeAssistantStore = useHomeAssistantStore();
 </script>

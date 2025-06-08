@@ -1,10 +1,10 @@
-import { defineStore } from "pinia";
-import router from "src/router";
-import { useMQTTStore } from "src/stores/mqtt";
-import { ref } from "vue";
-import { Dialog } from "quasar";
+import { defineStore } from 'pinia';
+import router from 'src/router';
+import { useMQTTStore } from 'src/stores/mqtt';
+import { ref } from 'vue';
+import { Dialog } from 'quasar';
 
-export const useHomeAssistantStore = defineStore("homeassistant", () => {
+export const useHomeAssistantStore = defineStore('homeassistant', () => {
   const mqttStore = useMQTTStore();
 
   const devices = ref([]);
@@ -40,9 +40,9 @@ export const useHomeAssistantStore = defineStore("homeassistant", () => {
       id,
       config: {
         identifiers: [`mqtt_${id}`],
-        manufacturer: "",
-        model: "",
-        name: "",
+        manufacturer: '',
+        model: '',
+        name: '',
       },
       entities: [],
     };
@@ -51,16 +51,16 @@ export const useHomeAssistantStore = defineStore("homeassistant", () => {
 
   function addEntityToDevice(entity, device) {
     const defaultEntity = {
-      type: "sensor",
-      id: "temperature",
+      type: 'sensor',
+      id: 'temperature',
       config: {
-        name: "",
-        state_topic: "",
-        state_class: "measurement",
-        device_class: "temperature",
-        unit_of_measurement: "°C",
+        name: '',
+        state_topic: '',
+        state_class: 'measurement',
+        device_class: 'temperature',
+        unit_of_measurement: '°C',
         value_template:
-          "{% if value_json.temperature is defined %}\n  {{ value_json.temperature }}\n{% else %}\n  {{ states(entity_id) }}\n{% endif %}\n",
+          '{% if value_json.temperature is defined %}\n  {{ value_json.temperature }}\n{% else %}\n  {{ states(entity_id) }}\n{% endif %}\n',
       },
     };
     if (!device.entities) {
@@ -76,27 +76,25 @@ export const useHomeAssistantStore = defineStore("homeassistant", () => {
       entities: [],
     };
     devices.value.push(device);
-    mqttStore
-      .searchTopics(new RegExp(`homeassistant/.*/${id}/.*/config`))
-      .forEach((topic) => {
-        const rawSensor = JSON.parse(mqttStore.topics[topic]);
-        // TODO could check if different between entities
-        device.config = rawSensor.device;
-        delete rawSensor.device;
-        const topicParts = topic.split("/");
-        device.entities.push({
-          type: topicParts[1],
-          id: topicParts[3],
-          config: rawSensor,
-        });
+    mqttStore.searchTopics(new RegExp(`homeassistant/.*/${id}/.*/config`)).forEach((topic) => {
+      const rawSensor = JSON.parse(mqttStore.topics[topic]);
+      // TODO could check if different between entities
+      device.config = rawSensor.device;
+      delete rawSensor.device;
+      const topicParts = topic.split('/');
+      device.entities.push({
+        type: topicParts[1],
+        id: topicParts[3],
+        config: rawSensor,
       });
-    router.push("/discovery-generator");
+    });
+    router.push('/discovery-generator');
   }
 
   function removeAll() {
     Dialog.create({
-      title: "Confirm",
-      message: "Remove all devices and entities?",
+      title: 'Confirm',
+      message: 'Remove all devices and entities?',
       cancel: true,
       persistent: true,
     }).onOk(() => {
@@ -106,8 +104,8 @@ export const useHomeAssistantStore = defineStore("homeassistant", () => {
 
   function removeDevice(device) {
     Dialog.create({
-      title: "Confirm",
-      message: "Remove device and entities?",
+      title: 'Confirm',
+      message: 'Remove device and entities?',
       cancel: true,
       persistent: true,
     }).onOk(() => {
@@ -117,8 +115,8 @@ export const useHomeAssistantStore = defineStore("homeassistant", () => {
 
   function removeDeviceEntity(device, entity) {
     Dialog.create({
-      title: "Confirm",
-      message: "Remove entity?",
+      title: 'Confirm',
+      message: 'Remove entity?',
       cancel: true,
       persistent: true,
     }).onOk(() => {

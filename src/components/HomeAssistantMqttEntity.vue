@@ -9,31 +9,23 @@
           label="remove"
           color="negative"
           flat
-          @click="
-            homeAssistantStore.removeDeviceEntity(props.device, props.entity)
-          "
+          @click="homeAssistantStore.removeDeviceEntity(props.device, props.entity)"
         />
       </q-toolbar>
-      <div class="text-caption text-weight-light">
-        /homeassistant/[type]/[DeviceId]/[ObjectId]
-      </div>
+      <div class="text-caption text-weight-light">/homeassistant/[type]/[DeviceId]/[ObjectId]</div>
     </q-card-section>
     <q-card-section>
-      <monaco-editor
-        v-model="deviceJson"
-        :filetype="props.entity.type"
-        style="min-height: 200px"
-      />
-      <q-banner inline-actions class="text-white bg-red" v-if="jsonError">
+      <monaco-editor v-model="deviceJson" :filetype="props.entity.type" style="min-height: 200px" />
+      <q-banner v-if="jsonError" inline-actions class="text-white bg-red">
         Invalid Format: {{ jsonError }}
       </q-banner>
     </q-card-section>
   </q-card>
 </template>
 <script setup>
-import { ref, computed } from "vue";
-import { useHomeAssistantStore } from "src/stores/homeassistant";
-import MonacoEditor from "src/components/MonacoEditor.vue";
+import { ref, computed } from 'vue';
+import { useHomeAssistantStore } from 'src/stores/homeassistant';
+import MonacoEditor from 'src/components/MonacoEditor.vue';
 
 const homeAssistantStore = useHomeAssistantStore();
 
