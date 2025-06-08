@@ -1,6 +1,5 @@
 import { defineStore, acceptHMRUpdate } from 'pinia';
 import { ref, computed } from 'vue';
-import router from 'src/router';
 import { useMQTTStore } from 'src/stores/mqtt';
 import { useHomeAssistantStore } from 'src/stores/homeassistant';
 
@@ -105,14 +104,15 @@ export const useTasmotaStore = defineStore('tasmota', () => {
     return Object.values(devices.value).filter((device) => isZBBridge(device));
   });
 
-  function generateHomeAssistantDiscoveryForTH01(d) {
+  function generateHomeAssistantDiscoveryForSNZB02(d) {
     const id = d.IEEEAddr.toLowerCase();
+    const model = d.ModelId === 'TH01' ? 'SNZB-02' : d.ModelId || 'Unknown';
     const haDevice = {
       id,
       config: {
         identifiers: [`zigbee2tasmota_${id}`],
         manufacturer: 'SONOFF',
-        model: 'Temperature and humidity sensor (SNZB-02)',
+        model: `Temperature And Humidity Sensor (${model})`,
         name: d.Name,
       },
       entities: ['temperature', 'humidity', 'battery', 'voltage', 'linkquality'].map((type) =>
@@ -192,13 +192,13 @@ export const useTasmotaStore = defineStore('tasmota', () => {
     return haSensor;
   }
 
-  function generateHomeAssistantDiscoveryForAllTH01() {
+  function generateHomeAssistantDiscoveryForAllSNZB02() {
     ZbInfos.value
-      .filter((o) => o.ModelId === 'TH01')
+      .filter((o) => ['TH01', 'SNZB-02P', 'SNZB-02D'].includes(o.ModelId))
       .forEach((d) => {
-        homeAssistantStore.addDevice(generateHomeAssistantDiscoveryForTH01(d));
+        homeAssistantStore.addDevice(generateHomeAssistantDiscoveryForSNZB02(d));
       });
-    router.push('/discovery-generator');
+    this.router.push('/discovery-generator');
   }
 
   return {
@@ -212,7 +212,7 @@ export const useTasmotaStore = defineStore('tasmota', () => {
     publishCmd,
     isZBBridge,
     resolveFullTopic,
-    generateHomeAssistantDiscoveryForAllTH01,
+    generateHomeAssistantDiscoveryForAllSNZB02,
   };
 });
 
