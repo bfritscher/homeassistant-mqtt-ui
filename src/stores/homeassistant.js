@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore, acceptHMRUpdate } from 'pinia';
 import router from 'src/router';
 import { useMQTTStore } from 'src/stores/mqtt';
 import { ref } from 'vue';
@@ -137,3 +137,8 @@ export const useHomeAssistantStore = defineStore('homeassistant', () => {
     publishAllDevices,
   };
 });
+
+// Enable HMR for this store
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useHomeAssistantStore, import.meta.hot));
+}

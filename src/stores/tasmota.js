@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore, acceptHMRUpdate } from 'pinia';
 import { ref, computed } from 'vue';
 import router from 'src/router';
 import { useMQTTStore } from 'src/stores/mqtt';
@@ -45,7 +45,17 @@ export const useTasmotaStore = defineStore('tasmota', () => {
       );
     } else if (result.ZbStatus3) {
       const index = ZbInfos.value.findIndex((d) => d.Device === result.ZbStatus3[0].Device);
-      ZbInfos.value[index] = result.ZbStatus3[0];
+      const zbDevice = result.ZbStatus3[0];
+
+      // Ensure Name is the second property with empty string if it doesn't exist
+      if (!zbDevice.Name) {
+        const { Device, ...rest } = zbDevice;
+        const reorderedDevice = { Device, Name: '', ...rest };
+        ZbInfos.value[index] = reorderedDevice;
+      } else {
+        ZbInfos.value[index] = zbDevice;
+      }
+
       countZbStatus3++;
       if (countZbStatus3 === ZbInfos.value.length && sub) {
         mqttStore.unsubscribe(sub);
@@ -205,3 +215,8 @@ export const useTasmotaStore = defineStore('tasmota', () => {
     generateHomeAssistantDiscoveryForAllTH01,
   };
 });
+
+// Enable HMR for this store
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useTasmotaStore, import.meta.hot));
+}

@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore, acceptHMRUpdate } from 'pinia';
 import { ref, watchEffect, computed } from 'vue';
 
 const subscribers = [];
@@ -247,3 +247,8 @@ export const useMQTTStore = defineStore('mqtt', () => {
     searchTopics,
   };
 });
+
+// Enable HMR for this store
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useMQTTStore, import.meta.hot));
+}

@@ -1,4 +1,4 @@
-import { defineStore } from 'pinia';
+import { defineStore, acceptHMRUpdate } from 'pinia';
 import { reactive } from 'vue';
 
 export const useUIStore = defineStore('ui', () => {
@@ -20,3 +20,8 @@ export const useUIStore = defineStore('ui', () => {
     mqttExplorer,
   };
 });
+
+// Enable HMR for this store
+if (import.meta.hot) {
+  import.meta.hot.accept(acceptHMRUpdate(useUIStore, import.meta.hot));
+}
