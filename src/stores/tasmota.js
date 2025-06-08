@@ -84,7 +84,7 @@ export const useTasmotaStore = defineStore('tasmota', () => {
   }
 
   function isZBBridge(device) {
-    return device.md === 'Sonoff ZbBridge';
+    return device.md === 'Sonoff ZbBridge' || device.md === 'Sonoff Zigbee Pro';
   }
 
   function resolveFullTopic(device, prefix = TASMOTA_PREFIX.TELE) {
