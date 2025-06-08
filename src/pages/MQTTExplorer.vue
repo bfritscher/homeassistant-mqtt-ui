@@ -35,7 +35,7 @@
           v-model:expanded="ui.mqttExplorer.expanded"
           :nodes="mqttStore.topicsTree"
           node-key="id"
-          :filter="ui.mqttExplorer.filter"
+          :filter="filterString"
           :filter-method="filterMethod"
         >
           <template #default-header="prop">
@@ -139,7 +139,7 @@
 </template>
 
 <script setup>
-import { ref, watchEffect } from 'vue';
+import { computed, ref, watchEffect, watch } from 'vue';
 import { useMQTTStore } from 'src/stores/mqtt';
 import { useTasmotaStore } from 'src/stores/tasmota';
 import { useHomeAssistantStore } from 'src/stores/homeassistant';
@@ -169,8 +169,51 @@ watchEffect(() => {
   ui.mqttExplorer.topic = ui.mqttExplorer.selected;
 });
 
+// Handle tree expansion when filtering
+watch(
+  () => ui.mqttExplorer.filter.query,
+  (newQuery) => {
+    if (newQuery) {
+      const search = newQuery.toLowerCase();
+      const nodesToExpand = new Set(['__ROOT__']); // Always include root
+
+      // Recursively find all nodes that need to be expanded
+      const findMatchingNodes = (nodes, parentPath = []) => {
+        nodes.forEach((node) => {
+          const currentPath = [...parentPath, node.id];
+          const nodeMatches = node.id.includes(search) || node.label.includes(search);
+
+          if (nodeMatches) {
+            // Add all parent nodes in the path to expansion set
+            currentPath.forEach((nodeId) => nodesToExpand.add(nodeId));
+          }
+
+          if (node.children) {
+            findMatchingNodes(node.children, currentPath);
+          }
+        });
+      };
+
+      // Find all nodes that need expansion
+      if (mqttStore.topicsTree) {
+        findMatchingNodes(mqttStore.topicsTree);
+      }
+
+      // Update the expanded array directly
+      ui.mqttExplorer.expanded = Array.from(nodesToExpand);
+    } else {
+      // Reset to default expanded state when filter is cleared
+      ui.mqttExplorer.expanded = ['__ROOT__', 'homeassistant', 'tasmota', 'tasmota/discovery'];
+    }
+  },
+);
+
+const filterString = computed(() => {
+  return JSON.stringify(ui.mqttExplorer.filter);
+});
+
 function filterMethod(node, filter) {
-  const json = filter;
+  const json = JSON.parse(filter);
 
   if (node.type === 'zigbee2mqtt' && !json.zigbee2mqtt) {
     return false;
@@ -178,16 +221,27 @@ function filterMethod(node, filter) {
   if (!json.query) {
     return true;
   }
-  const search = ui.mqttExplorer.filter.query.toLowerCase();
-  if (node.id === '__ROOT__' || node.id.includes(search) || node.label.includes(search)) {
-    treeRef.value.setExpanded(node.id, true);
+  const search = json.query.toLowerCase();
+
+  // Check if this node matches
+  const nodeMatches =
+    node.id === '__ROOT__' || node.id.includes(search) || node.label.includes(search);
+
+  if (nodeMatches) {
     return true;
-  } else {
-    return false;
   }
+
+  // Check if any child nodes match (recursive)
+  if (node.children) {
+    return node.children.some((child) => filterMethod(child, filter));
+  }
+
+  return false;
 }
 function resetFilter() {
-  ui.mqttExplorer.filter.value.query = '';
+  ui.mqttExplorer.filter.query = '';
+  // Restore default expanded state
+  ui.mqttExplorer.expanded = ['__ROOT__', 'homeassistant', 'tasmota', 'tasmota/discovery'];
   filterRef.value.focus();
 }
 
