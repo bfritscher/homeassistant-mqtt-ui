@@ -6,12 +6,7 @@
       </q-card-section>
       <q-separator />
       <div style="max-height: 50vh" class="scroll q-ma-md">
-        <div
-          v-for="(m, index) in homeAssistantStore.toDiscoveryEntries(
-            props.device
-          )"
-          :key="index"
-        >
+        <div v-for="(m, index) in homeAssistantStore.toDiscoveryEntries(props.device)" :key="index">
           <div class="text-subtitle1">
             Published to <em>{{ m.topic }}</em>
           </div>
@@ -37,9 +32,8 @@
 </template>
 
 <script setup>
-import { useDialogPluginComponent } from "quasar";
-import { useHomeAssistantStore } from "src/stores/homeassistant";
-import MonacoEditor from "src/components/MonacoEditor.vue";
+import { useDialogPluginComponent } from 'quasar';
+import { useHomeAssistantStore } from 'src/stores/homeassistant';
 
 const homeAssistantStore = useHomeAssistantStore();
 
@@ -56,8 +50,7 @@ defineEmits([
   ...useDialogPluginComponent.emits,
 ]);
 
-const { dialogRef, onDialogHide, onDialogOK, onDialogCancel } =
-  useDialogPluginComponent();
+const { dialogRef, onDialogHide, onDialogOK /*onDialogCancel*/ } = useDialogPluginComponent();
 // dialogRef      - Vue ref to be applied to QDialog
 // onDialogHide   - Function to be used as handler for @hide on QDialog
 // onDialogOK     - Function to call to settle dialog with "ok" outcome

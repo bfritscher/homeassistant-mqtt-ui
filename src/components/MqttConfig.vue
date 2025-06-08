@@ -3,14 +3,14 @@
     <q-card-section>
       <div class="text-h5 q-mb-xs">MQTT Server Config</div>
       <q-input
+        v-model="mqttStore.config.url"
         label="Server URL"
         hint="Example: mqtt://localhost:1883 or ws://10.0.0.1:8883"
-        v-model="mqttStore.config.url"
       />
     </q-card-section>
     <q-card-section class="row q-col-gutter-md">
       <div class="col-12 col-md-6">
-        <q-input label="Username" v-model="mqttStore.config.username" />
+        <q-input v-model="mqttStore.config.username" label="Username" />
       </div>
       <div class="col-12 col-md-6">
         <q-input
@@ -18,7 +18,7 @@
           label="Password"
           :type="isPwd ? 'password' : 'text'"
         >
-          <template v-slot:append>
+          <template #append>
             <q-icon
               :name="isPwd ? 'visibility_off' : 'visibility'"
               class="cursor-pointer"
@@ -37,15 +37,28 @@
         unelevated
         color="primary"
         icon="bolt"
-        @click="mqttStore.connect()"
+        :loading="connecting"
+        @click="handleConnect"
       />
     </q-card-actions>
   </q-card>
 </template>
 <script setup>
-import { ref } from "vue";
-import { useMQTTStore } from "src/stores/mqtt";
+import { ref } from 'vue';
+import { useMQTTStore } from 'src/stores/mqtt';
 
 const mqttStore = useMQTTStore();
 const isPwd = ref(true);
+const connecting = ref(false);
+
+async function handleConnect() {
+  connecting.value = true;
+  try {
+    await mqttStore.connect();
+  } catch (error) {
+    console.error('Connection failed:', error);
+  } finally {
+    connecting.value = false;
+  }
+}
 </script>

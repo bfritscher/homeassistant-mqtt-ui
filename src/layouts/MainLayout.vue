@@ -7,17 +7,8 @@
       </q-toolbar>
       <q-tabs no-caps>
         <q-route-tab label="About" to="/" exact />
-        <q-route-tab
-          label="MQTT Explorer"
-          to="/mqtt"
-          exact
-          :disable="!$q.platform.is.electron"
-        />
-        <q-route-tab
-          label="Home Assistant Discovery Generator"
-          to="/discovery-generator"
-          exact
-        />
+        <q-route-tab label="MQTT Explorer" to="/mqtt" exact :disable="!$q.platform.is.electron" />
+        <q-route-tab label="Home Assistant Discovery Generator" to="/discovery-generator" exact />
         <q-route-tab
           label="Tasmota ZB Bridge"
           to="/tasmota-zb-bridge"
@@ -26,9 +17,7 @@
         >
           <q-badge
             :color="
-              mqttStore.isConnected && tasmotaStore.zbBridges.length > 0
-                ? 'positive'
-                : 'negative'
+              mqttStore.isConnected && tasmotaStore.zbBridges.length > 0 ? 'positive' : 'negative'
             "
             floating
             rounded
@@ -43,9 +32,9 @@
 </template>
 
 <script setup>
-import { useTasmotaStore } from "src/stores/tasmota";
-import { useMQTTStore } from "src/stores/mqtt";
-import HeaderStatus from "src/components/HeaderStatus.vue";
+import { useTasmotaStore } from 'src/stores/tasmota';
+import { useMQTTStore } from 'src/stores/mqtt';
+import HeaderStatus from 'src/components/HeaderStatus.vue';
 const tasmotaStore = useTasmotaStore();
 const mqttStore = useMQTTStore();
 </script>

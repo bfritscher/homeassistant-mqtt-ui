@@ -8,43 +8,52 @@
  * in package.json > dependencies and NOT in devDependencies
  *
  **/
-import { contextBridge } from "electron";
-import mqtt from "mqtt";
+import { contextBridge, ipcRenderer } from 'electron';
 
-let mqttClient;
+let messageCallback = null;
 
-contextBridge.exposeInMainWorld("mqtt", {
-  connect: (payload, callback) => {
-    mqttClient = mqtt.connect(payload.url, {
-      username: payload.username,
-      password: payload.password,
-      rejectUnauthorized: false,
-    });
-    mqttClient.on("message", (topic, message) => {
-      callback(topic, message.toString());
-    });
-    mqttClient.on("connect", () => {
-      callback(null, { connected: true });
-      mqttClient.subscribe("#");
-    });
-    mqttClient.on("error", (error) => {
-      callback(null, { error });
-    });
-    mqttClient.on("close", () => {
-      callback(null, { connected: false });
-    });
-    mqttClient.on("end", () => {
-      callback(null, { connected: false });
-    });
-  },
-  disconnect: () => {
-    if (mqttClient) {
-      mqttClient.end();
+// Listen for MQTT messages from main process
+ipcRenderer.on('mqtt-message', (event, topic, message) => {
+  if (messageCallback) {
+    messageCallback(topic, message);
+  }
+});
+
+// Listen for MQTT status changes from main process
+ipcRenderer.on('mqtt-status', (event, status) => {
+  if (messageCallback) {
+    messageCallback(null, status);
+  }
+});
+
+contextBridge.exposeInMainWorld('mqtt', {
+  connect: async (payload, callback) => {
+    messageCallback = callback;
+    try {
+      const result = await ipcRenderer.invoke('mqtt-connect', payload);
+      return result;
+    } catch (error) {
+      console.error('Preload: connect error:', error);
+      throw error;
     }
   },
-  publish: (topic, message, options) => {
-    if (mqttClient) {
-      mqttClient.publish(topic, message, options);
+  disconnect: async () => {
+    messageCallback = null;
+    try {
+      const result = await ipcRenderer.invoke('mqtt-disconnect');
+      return result;
+    } catch (error) {
+      console.error('Preload: disconnect error:', error);
+      throw error;
+    }
+  },
+  publish: async (topic, message, options) => {
+    try {
+      const result = await ipcRenderer.invoke('mqtt-publish', topic, message, options);
+      return result;
+    } catch (error) {
+      console.error('Preload: publish error:', error);
+      throw error;
     }
   },
 });
