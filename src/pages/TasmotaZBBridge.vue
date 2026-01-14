@@ -156,6 +156,12 @@
           label="generate discovery config for all SNZB-02 sensors (TH01, SNZB-02P, SNZB-02D)"
           @click="tasmotaStore.generateHomeAssistantDiscoveryForAllSNZB02()"
         />
+        <q-btn
+          class="q-mt-md q-ml-md"
+          color="primary"
+          label="generate discovery config for all TRVZB thermostats"
+          @click="tasmotaStore.generateHomeAssistantDiscoveryForAllTRVZB()"
+        />
       </div>
       <q-banner v-if="tasmotaStore.zbBridges.length === 0" class="bg-warning text-white">
         <div class="text-h5">No Sonoff ZbBridge with Tasmota found!</div>

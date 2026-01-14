@@ -201,6 +201,119 @@ export const useTasmotaStore = defineStore('tasmota', () => {
     this.router.push('/discovery-generator');
   }
 
+  function generateHomeAssistantDiscoveryForTRVZB(d) {
+    const id = d.IEEEAddr.toLowerCase();
+    const model = d.ModelId || 'TRVZB';
+    const deviceIdentifier = config.value.SetOption112 ? d.Name : d.Device;
+    const topicDeviceName = config.value.SetOption83 ? d.Name : d.Device;
+
+    const haDevice = {
+      id,
+      config: {
+        identifiers: [`zigbee2tasmota_${id}`],
+        manufacturer: 'SONOFF',
+        model: `Zigbee Thermostatic Radiator Valve (${model})`,
+        name: d.Name,
+      },
+      entities: [
+        buildTRVZBClimate(d, deviceIdentifier, topicDeviceName),
+        buildHaSensorForTRVZB(d, 'local_temperature', deviceIdentifier, topicDeviceName),
+        buildHaSensorForTRVZB(d, 'heating', deviceIdentifier, topicDeviceName),
+        buildHaSensorForTRVZB(d, 'linkquality', deviceIdentifier, topicDeviceName),
+      ],
+    };
+    return haDevice;
+  }
+
+  function buildTRVZBClimate(d, deviceIdentifier, topicDeviceName) {
+    const id = d.IEEEAddr.toLowerCase();
+    const stateTopic = `${resolveFullTopic(selectedZBDevice.value, TASMOTA_PREFIX.TELE)}${topicDeviceName}/SENSOR`;
+
+    const climate = {
+      type: 'climate',
+      id: 'climate',
+      config: {
+        availability_mode: 'all',
+        availability_topic: `${resolveFullTopic(selectedZBDevice.value, TASMOTA_PREFIX.TELE)}LWT`,
+        payload_available: 'Online',
+        payload_not_available: 'Offline',
+        name: d.Name,
+        unique_id: `${id}_climate_zigbee2tasmota`,
+        modes: ['off', 'heat'],
+        current_temperature_topic: stateTopic,
+        current_temperature_template: `{% if value_json.ZbReceived.${deviceIdentifier}.LocalTemperature is defined %}\n  {{ value_json.ZbReceived.${deviceIdentifier}.LocalTemperature }}\n{% else %}\n  {{ states.climate.${d.Name.replace(/[^a-zA-Z0-9_]/g, '_')}.attributes.current_temperature | default(0) }}\n{% endif %}`,
+        temperature_state_topic: stateTopic,
+        temperature_state_template: `{% if value_json.ZbReceived.${deviceIdentifier}.OccupiedHeatingSetpoint is defined %}\n  {{ value_json.ZbReceived.${deviceIdentifier}.OccupiedHeatingSetpoint }}\n{% else %}\n  {{ states.climate.${d.Name.replace(/[^a-zA-Z0-9_]/g, '_')}.attributes.temperature | default(20) }}\n{% endif %}`,
+        temperature_command_topic: `${resolveFullTopic(selectedZBDevice.value, TASMOTA_PREFIX.CMND)}ZbSend`,
+        temperature_command_template: `{"Device":"${d.Device}","Write":{"OccupiedHeatingSetpoint":{{ value }}}}`,
+        mode_state_topic: stateTopic,
+        mode_state_template: `{% if value_json.ZbReceived.${deviceIdentifier}.Power is defined %}\n  {{ 'heat' if value_json.ZbReceived.${deviceIdentifier}.Power == 1 else 'off' }}\n{% else %}\n  {{ states('climate.${d.Name.replace(/[^a-zA-Z0-9_]/g, '_')}') | default('off') }}\n{% endif %}`,
+        mode_command_topic: `${resolveFullTopic(selectedZBDevice.value, TASMOTA_PREFIX.CMND)}ZbSend`,
+        mode_command_template: `{"Device":"${d.Device}","Write":{"Power":{{ '1' if value == 'heat' else '0' }}}}`,
+        min_temp: 4,
+        max_temp: 35,
+        temp_step: 0.5,
+        temperature_unit: 'C',
+      },
+    };
+    return climate;
+  }
+
+  function buildHaSensorForTRVZB(d, type, deviceIdentifier, topicDeviceName) {
+    const id = d.IEEEAddr.toLowerCase();
+    const haSensor = {
+      type: 'sensor',
+      id: type,
+    };
+    const sensor = {
+      availability_mode: 'all',
+      availability_topic: `${resolveFullTopic(selectedZBDevice.value, TASMOTA_PREFIX.TELE)}LWT`,
+      payload_available: 'Online',
+      payload_not_available: 'Offline',
+      name: `${d.Name} `,
+      state_topic: `${resolveFullTopic(selectedZBDevice.value, TASMOTA_PREFIX.TELE)}${topicDeviceName}/SENSOR`,
+      unique_id: `${id}_${type}_zigbee2tasmota`,
+      state_class: 'measurement',
+    };
+
+    let key;
+    if (type === 'local_temperature') {
+      key = 'LocalTemperature';
+      sensor.device_class = 'temperature';
+      sensor.enabled_by_default = false;
+      sensor.unit_of_measurement = '°C';
+      sensor.name += 'temperature';
+    }
+    if (type === 'heating') {
+      key = 'Power';
+      sensor.enabled_by_default = false;
+      sensor.icon = 'mdi:radiator';
+      sensor.name += 'heating';
+      delete sensor.state_class;
+    }
+    if (type === 'linkquality') {
+      key = 'LinkQuality';
+      sensor.enabled_by_default = false;
+      sensor.unit_of_measurement = 'lqi';
+      sensor.icon = 'mdi:signal';
+      sensor.entity_category = 'diagnostic';
+      sensor.name += 'linkquality';
+    }
+
+    sensor.value_template = `{% if value_json.ZbReceived.${deviceIdentifier}.${key} is defined %}\n  {{ value_json.ZbReceived.${deviceIdentifier}.${key} }}\n{% else %}\n  {{ states(entity_id) }}\n{% endif %}\n`;
+    haSensor.config = sensor;
+    return haSensor;
+  }
+
+  function generateHomeAssistantDiscoveryForAllTRVZB() {
+    ZbInfos.value
+      .filter((o) => o.ModelId === 'TRVZB')
+      .forEach((d) => {
+        homeAssistantStore.addDevice(generateHomeAssistantDiscoveryForTRVZB(d));
+      });
+    this.router.push('/discovery-generator');
+  }
+
   return {
     config,
     ZbInfos,
@@ -213,6 +326,7 @@ export const useTasmotaStore = defineStore('tasmota', () => {
     isZBBridge,
     resolveFullTopic,
     generateHomeAssistantDiscoveryForAllSNZB02,
+    generateHomeAssistantDiscoveryForAllTRVZB,
   };
 });
 
