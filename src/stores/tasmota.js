@@ -217,8 +217,8 @@ export const useTasmotaStore = defineStore('tasmota', () => {
       },
       entities: [
         buildTRVZBClimate(d, deviceIdentifier, topicDeviceName),
-        buildHaSensorForTRVZB(d, 'local_temperature', deviceIdentifier, topicDeviceName),
-        buildHaSensorForTRVZB(d, 'heating', deviceIdentifier, topicDeviceName),
+        // buildHaSensorForTRVZB(d, 'local_temperature', deviceIdentifier, topicDeviceName),
+        // buildHaSensorForTRVZB(d, 'heating', deviceIdentifier, topicDeviceName),
         buildHaSensorForTRVZB(d, 'linkquality', deviceIdentifier, topicDeviceName),
       ],
     };
