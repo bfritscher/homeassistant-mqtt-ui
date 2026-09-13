@@ -3,6 +3,8 @@ import router from 'src/router';
 import { useMQTTStore } from 'src/stores/mqtt';
 import { ref } from 'vue';
 import { Dialog } from 'quasar';
+import { numericValueTemplate } from 'src/utils/mqttTemplates';
+import { getDiscoveryUpdates } from 'src/utils/discoveryUpdates';
 
 export const useHomeAssistantStore = defineStore('homeassistant', () => {
   const mqttStore = useMQTTStore();
@@ -34,6 +36,23 @@ export const useHomeAssistantStore = defineStore('homeassistant', () => {
     devices.value.forEach(publishDevice);
   }
 
+  function getPublishedUpdates(deviceId) {
+    return getDiscoveryUpdates(mqttStore.topics, deviceId);
+  }
+
+  async function publishDiscoveryUpdate(update) {
+    if (!mqttStore.isConnected) {
+      return { success: false, error: 'Connect to MQTT before publishing updates.' };
+    }
+    if (mqttStore.topics[update.topic] !== update.originalMessage) {
+      return {
+        success: false,
+        error: 'This configuration changed. Close and reopen the update preview.',
+      };
+    }
+    return mqttStore.publish(update.topic, update.message, { retain: true, qos: 1 });
+  }
+
   function addDevice(device) {
     const id = `0x${Math.random().toString(36).substring(2, 15)}`;
     const defaultDevice = {
@@ -59,8 +78,7 @@ export const useHomeAssistantStore = defineStore('homeassistant', () => {
         state_class: 'measurement',
         device_class: 'temperature',
         unit_of_measurement: '°C',
-        value_template:
-          '{% if value_json.temperature is defined %}\n  {{ value_json.temperature }}\n{% else %}\n  {{ states(entity_id) }}\n{% endif %}\n',
+        value_template: numericValueTemplate(['temperature']),
       },
     };
     if (!device.entities) {
@@ -135,6 +153,8 @@ export const useHomeAssistantStore = defineStore('homeassistant', () => {
     toDiscoveryEntries,
     publishDevice,
     publishAllDevices,
+    getPublishedUpdates,
+    publishDiscoveryUpdate,
   };
 });
 

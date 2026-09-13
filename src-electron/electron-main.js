@@ -4,6 +4,7 @@ import os from 'os';
 import fs from 'fs';
 import { fileURLToPath } from 'node:url';
 import mqtt from 'mqtt';
+import { publishToBroker } from './mqttPublish.js';
 
 // needed in case process is undefined under Linux
 const platform = process.platform || os.platform();
@@ -131,11 +132,7 @@ ipcMain.handle('mqtt-disconnect', async () => {
 });
 
 ipcMain.handle('mqtt-publish', async (event, topic, message, options) => {
-  if (mqttClient) {
-    mqttClient.publish(topic, message, options);
-    return { success: true };
-  }
-  return { success: false, error: 'Not connected' };
+  return publishToBroker(mqttClient, topic, message, options);
 });
 
 app.whenReady().then(createWindow);

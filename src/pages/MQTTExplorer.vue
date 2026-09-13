@@ -21,6 +21,9 @@
           </template>
         </q-input>
         <q-toolbar>
+          <q-btn label="Update published devices" color="primary" flat @click="showUpdates()" />
+        </q-toolbar>
+        <q-toolbar>
           <q-checkbox
             v-model="ui.mqttExplorer.filter.zigbee2mqtt"
             label="Zigbee2MQTT"
@@ -97,6 +100,12 @@
               flat
               @click.stop="homeAssistantStore.reverseEntity(prop.node.labelPart)"
             />
+            <q-btn
+              label="Update"
+              color="primary"
+              flat
+              @click.stop="showUpdates(prop.node.labelPart)"
+            />
           </template>
         </q-tree>
       </template>
@@ -140,6 +149,8 @@
 
 <script setup>
 import { computed, ref, watchEffect, watch } from 'vue';
+import { useQuasar } from 'quasar';
+import DialogDiscoveryUpdates from 'src/components/DialogDiscoveryUpdates.vue';
 import { useMQTTStore } from 'src/stores/mqtt';
 import { useTasmotaStore } from 'src/stores/tasmota';
 import { useHomeAssistantStore } from 'src/stores/homeassistant';
@@ -151,6 +162,11 @@ const mqttStore = useMQTTStore();
 const tasmotaStore = useTasmotaStore();
 const homeAssistantStore = useHomeAssistantStore();
 const ui = useUIStore();
+const $q = useQuasar();
+
+function showUpdates(deviceId) {
+  $q.dialog({ component: DialogDiscoveryUpdates, componentProps: { deviceId } });
+}
 
 const filterRef = ref(null);
 const treeRef = ref(null);

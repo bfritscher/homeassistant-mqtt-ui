@@ -193,8 +193,10 @@ export const useMQTTStore = defineStore('mqtt', () => {
       if (!result.success) {
         console.error('Publish failed:', result.error);
       }
+      return result;
     } catch (err) {
       console.error('Publish error:', err);
+      return { success: false, error: err.message || 'Publish failed' };
     }
   }
 

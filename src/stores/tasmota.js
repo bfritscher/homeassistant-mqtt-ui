@@ -2,6 +2,7 @@ import { defineStore, acceptHMRUpdate } from 'pinia';
 import { ref, computed } from 'vue';
 import { useMQTTStore } from 'src/stores/mqtt';
 import { useHomeAssistantStore } from 'src/stores/homeassistant';
+import { numericValueTemplate, powerModeTemplate } from 'src/utils/mqttTemplates';
 
 const homeAssistantStore = useHomeAssistantStore();
 
@@ -176,18 +177,17 @@ export const useTasmotaStore = defineStore('tasmota', () => {
 
     if (type === 'linkquality') {
       key = 'LinkQuality';
-      sensor.device_class = 'linkquality';
       sensor.enabled_by_default = false;
       sensor.unit_of_measurement = 'lqi';
       sensor.icon = 'mdi:signal';
       sensor.entity_category = 'diagnostic';
       sensor.name += type;
     }
-    sensor.value_template = `{% if value_json.ZbReceived.${
-      config.value.SetOption112 ? d.Name : d.Device
-    }.${key} is defined %}\n  {{ value_json.ZbReceived.${
-      config.value.SetOption112 ? d.Name : d.Device
-    }.${key} }}\n{% else %}\n  {{ states(entity_id) }}\n{% endif %}\n`;
+    sensor.value_template = numericValueTemplate([
+      'ZbReceived',
+      config.value.SetOption112 ? d.Name : d.Device,
+      key,
+    ]);
     haSensor.config = sensor;
     return haSensor;
   }
@@ -241,13 +241,21 @@ export const useTasmotaStore = defineStore('tasmota', () => {
         unique_id: `${id}_climate_zigbee2tasmota`,
         modes: ['off', 'heat'],
         current_temperature_topic: stateTopic,
-        current_temperature_template: `{% if value_json.ZbReceived.${deviceIdentifier}.LocalTemperature is defined %}\n  {{ value_json.ZbReceived.${deviceIdentifier}.LocalTemperature }}\n{% else %}\n  {{ states.climate.${d.Name.replace(/[^a-zA-Z0-9_]/g, '_')}.attributes.current_temperature | default(0) }}\n{% endif %}`,
+        current_temperature_template: numericValueTemplate([
+          'ZbReceived',
+          deviceIdentifier,
+          'LocalTemperature',
+        ]),
         temperature_state_topic: stateTopic,
-        temperature_state_template: `{% if value_json.ZbReceived.${deviceIdentifier}.OccupiedHeatingSetpoint is defined %}\n  {{ value_json.ZbReceived.${deviceIdentifier}.OccupiedHeatingSetpoint }}\n{% else %}\n  {{ states.climate.${d.Name.replace(/[^a-zA-Z0-9_]/g, '_')}.attributes.temperature | default(20) }}\n{% endif %}`,
+        temperature_state_template: numericValueTemplate([
+          'ZbReceived',
+          deviceIdentifier,
+          'OccupiedHeatingSetpoint',
+        ]),
         temperature_command_topic: `${resolveFullTopic(selectedZBDevice.value, TASMOTA_PREFIX.CMND)}ZbSend`,
         temperature_command_template: `{"Device":"${d.Device}","Write":{"OccupiedHeatingSetpoint":{{ value }}}}`,
         mode_state_topic: stateTopic,
-        mode_state_template: `{% if value_json.ZbReceived.${deviceIdentifier}.Power is defined %}\n  {{ 'heat' if value_json.ZbReceived.${deviceIdentifier}.Power == 1 else 'off' }}\n{% else %}\n  {{ states('climate.${d.Name.replace(/[^a-zA-Z0-9_]/g, '_')}') | default('off') }}\n{% endif %}`,
+        mode_state_template: powerModeTemplate(['ZbReceived', deviceIdentifier, 'Power']),
         mode_command_topic: `${resolveFullTopic(selectedZBDevice.value, TASMOTA_PREFIX.CMND)}ZbSend`,
         mode_command_template: `{"Device":"${d.Device}","Write":{"Power":{{ '1' if value == 'heat' else '0' }}}}`,
         min_temp: 4,
@@ -300,7 +308,7 @@ export const useTasmotaStore = defineStore('tasmota', () => {
       sensor.name += 'linkquality';
     }
 
-    sensor.value_template = `{% if value_json.ZbReceived.${deviceIdentifier}.${key} is defined %}\n  {{ value_json.ZbReceived.${deviceIdentifier}.${key} }}\n{% else %}\n  {{ states(entity_id) }}\n{% endif %}\n`;
+    sensor.value_template = numericValueTemplate(['ZbReceived', deviceIdentifier, key]);
     haSensor.config = sensor;
     return haSensor;
   }

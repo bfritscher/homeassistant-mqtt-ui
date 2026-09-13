@@ -94,6 +94,49 @@ yarn format
 npm run format
 ```
 
+### Test discovery templates
+
+The regression tests render generated templates with Python and Jinja2, including
+partial Zigbee reports received before Home Assistant has an entity state.
+
+```bash
+python -m pip install Jinja2
+npm test
+```
+
+Set `PYTHON` if your Python executable has a different name or path.
+
+### Apply template fixes to existing devices
+
+Connect to your broker and open **MQTT Explorer → Update published devices** to
+scan received discovery messages. Use **Update** beside a device for a single
+device. Expand **Review changes** to compare each field, select the entities to
+update, then click **Publish selected**.
+
+Updates replace recognized older SNZB-02 and TRVZB templates and remove the invalid
+LQI device class. They preserve the original discovery topics, unique IDs, device
+metadata and custom settings. Custom templates are left intact. No bridge scan or
+device regeneration is required, and already updated entries are omitted.
+
+Each entity shows its publish result. If a configuration changes while the preview
+is open, reopen the preview to use its latest version. **Edit** continues to load
+the existing configuration into Discovery Generator for manual editing.
+
+Missing or invalid numeric fields produce an empty result, which Home Assistant
+ignores for numeric MQTT sensors and climate temperatures. The last valid reading
+is preserved; an entity without a reading stays unknown. HVAC mode templates retain
+the actual entity's previous `heat`/`off` state, or return `None` if it is unknown:
+[Home Assistant 2026.9's mode handler](https://github.com/home-assistant/core/blob/2026.9.2/homeassistant/components/mqtt/climate.py)
+rejects empty modes. The updater also repairs the empty-mode templates from the
+first version of this fix.
+LQI retains its unit and diagnostic metadata without an unsupported device class.
+
+If numeric `unknown` exceptions appear during discovery updates, reload the MQTT
+integration in Home Assistant after publishing the fixes. Existing entities can
+still hold invalid string values produced by their old templates; changing their
+configuration does not clear that in-memory value. A new valid sensor report can
+also replace it. Check for new errors after the reload; earlier log entries remain.
+
 ### Build the app for production
 
 ```bash
